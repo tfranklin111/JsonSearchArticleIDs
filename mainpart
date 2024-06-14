@@ -1,0 +1,49 @@
+import json
+import os
+
+# List of JSON file paths
+file_paths = [
+]
+
+output_file_path = '/Users/someone/Downloads/specific_file/slugs_output.txt'
+base_url = "urltobeaddedto"
+
+# List of article IDs
+target_article_ids = [
+    "articleID"  # Add your target article IDs here
+]
+
+try:
+    # Open the output file once
+    with open(output_file_path, 'w') as output_file:
+        # Iterate through each JSON file
+        for file_path in file_paths:
+            # Open and load the JSON data
+            with open(file_path, 'r') as json_file:
+                data = json.load(json_file)
+
+            # Check if 'entries' exists and is a list
+            if 'entries' in data and isinstance(data['entries'], list):
+                for entry in data['entries']:
+                    # Check if 'fields' exists within each entry and is a dictionary
+                    if 'fields' in entry and isinstance(entry['fields'], dict):
+                        fields = entry['fields']
+                        # Extract the 'slug' -> 'en-US' or provide a default value if not found
+                        slug = fields.get('slug', {}).get('en-US', 'not found')
+                        if slug != 'not found':
+                            slug = base_url + slug
+
+                        # Extract the 'articleId' -> 'en-US' or provide a default value if not found
+                        article_id = fields.get('articleId', {}).get('en-US', 'not found')
+
+                        # Check if the article ID is in the target list
+                        if article_id in target_article_ids:
+                            output_file.write(f"Slug: {slug}, Article ID: {article_id}\n")
+                    else:
+                        output_file.write(
+                            f"The 'fields' key is not found or not a dictionary in an entry of {os.path.basename(file_path)}\n")
+            else:
+                output_file.write(f"The 'entries' key is not found or not a list in {os.path.basename(file_path)}\n")
+
+except Exception as e:
+    print(f"Error: {e}")
